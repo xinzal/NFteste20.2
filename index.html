@@ -267,6 +267,7 @@ refs.btnForm.addEventListener('click', ()=>{ activateButton(refs.btnForm); refs.
 refs.btnView.addEventListener('click', ()=>{ activateButton(refs.btnView); refs.sections.view.classList.add('active'); refs.sections.form.classList.remove('active'); refs.sections.emails.classList.remove('active'); carregarNFs(); });
 refs.btnEmails.addEventListener('click', ()=>{ activateButton(refs.btnEmails); refs.sections.emails.classList.add('active'); refs.sections.form.classList.remove('active'); refs.sections.view.classList.remove('active'); carregarEmails(); });
 refs.btnManual.addEventListener('click', ()=>{ window.open("https://www.canva.com/design/DAG2E8JXyUc/AeDk2bBvcx-L8c7_t5rAiQ/edit", "_blank"); });
+    refs.btnSheets.addEventListener('click', ()=>{ window.open("https://docs.google.com/spreadsheets/d/1W3yuREnP4OpS2CjjAi229V1cR-skuTWeAUm6KU_G0VM/edit?pli=1&gid=0#gid=0", "_blank"); });
 
 /* Enviar NF (mantive FileReader + POST) */
 async function enviarNF(){
