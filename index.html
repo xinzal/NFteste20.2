@@ -28,8 +28,25 @@ label{display:block;margin-top:12px;font-weight:700;color:rgba(75,0,130,0.95)}
 input,select,textarea{width:100%;padding:10px;margin-top:6px;border-radius:6px;border:1px solid #ccc;outline:none}
 input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 6px rgba(0,60,143,0.12)}
 
-button.send{margin-top:18px;padding:12px;background:var(--primary);color:#fff;font-weight:700;border:0;border-radius:6px;cursor:pointer;max-width:320px;width:100%}
+/* botão padrão send */
+button.send{margin-top:18px;padding:12px;background:var(--primary);color:#fff;font-weight:700;border:0;border-radius:6px;cursor:pointer;max-width:320px;width:100%;display:inline-flex;align-items:center;justify-content:center;gap:8px;position:relative}
 
+/* --- ANIMAÇÃO: 3 bolinhas pulando (aparecem somente enquanto enviar) --- */
+.dots{display:inline-flex;gap:6px;align-items:flex-end;visibility:hidden;height:18px}
+.dots.active{visibility:visible}
+.dot{width:8px;height:8px;border-radius:50%;background:#fff;display:inline-block;transform:translateY(0);animation:dot-bounce 0.9s infinite ease-in-out}
+.dot:nth-child(1){animation-delay:0s}
+.dot:nth-child(2){animation-delay:0.12s}
+.dot:nth-child(3){animation-delay:0.24s}
+@keyframes dot-bounce{
+  0%,100%{ transform: translateY(0); opacity:0.9; }
+  50%{ transform: translateY(-6px); opacity:1; }
+}
+
+/* quando desabilitado */
+button.send[disabled]{opacity:0.7;cursor:not-allowed;}
+
+/* Mantive o resto do CSS já existente */
 table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;min-width:900px}
 th,td{border:1px solid #e6dff1;padding:10px;text-align:center;vertical-align:middle}
 th{background:var(--primary);color:#fff;font-weight:600}
@@ -60,6 +77,23 @@ tr:hover{background:#f0e0fb}
 .page-numbers button{padding:6px 10px;border-radius:6px;border:0;background:#eee;cursor:pointer}
 .page-numbers button.active{background:var(--primary);color:#fff;font-weight:600}
 #rowsPerPage{padding:6px;border-radius:6px}
+
+/* --- nova classe para a caixinha visual (apenas visual, não salva nada) --- */
+.preview-container{
+  margin-top:20px;
+  padding:12px;
+  background:#eef4ff;
+  border-left:4px solid var(--primary);
+  border-radius:6px;
+}
+.preview-text{
+  margin-top:8px;
+  font-size:15px;
+  font-weight:600;
+  color:#333;
+  word-break:break-word;
+}
+
 @media (max-width:900px){table{font-size:13px;min-width:720px}.page-numbers{max-width:100%;overflow:auto}}
 </style>
 </head>
@@ -105,7 +139,24 @@ tr:hover{background:#f0e0fb}
         <label for="observacao">Observação:</label>
         <input type="text" id="observacao" placeholder="Digite aqui uma observação">
 
-        <button type="button" class="send" onclick="enviarNF()">Enviar NF</button>
+        <!-- Adicionei id específico para o botão Enviar NF para controlar apenas ele -->
+        <button id="btnEnviarNF" type="button" class="send" onclick="enviarNF()">
+          <span class="btn-text">Enviar NF</span>
+          <!-- as bolinhas escondidas por padrão; serão ativadas via JS -->
+          <span class="dots" aria-hidden="true">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </span>
+        </button>
+
+        <!-- CAIXINHA VISUAL: só visual, NÃO envia para webApp -->
+        <div id="previewContainer" class="preview-container" aria-live="polite">
+            <strong>Texto de cobertura (visual):</strong>
+            <p id="previewTextoCobertura" class="preview-text">
+                Digite as informações acima para ver o texto aqui...
+            </p>
+        </div>
     </form>
 </section>
 
@@ -269,7 +320,14 @@ const refs = {
   obsBubble: document.getElementById('obsBubble'),
   obsText: document.getElementById('obsText'),
   deleteModal: document.getElementById('deleteModal'),
-  confirmDelete: document.getElementById('confirmDelete')
+  confirmDelete: document.getElementById('confirmDelete'),
+  // novos refs para a caixinha visual
+  previewTextoCobertura: document.getElementById('previewTextoCobertura'),
+  inputRazao: document.getElementById('razao'),
+  inputNfVenda: document.getElementById('nfVenda'),
+  inputNfRemessa: document.getElementById('nfRemessa'),
+  // refs para o botão que recebeu a animação
+  btnEnviarNF: document.getElementById('btnEnviarNF')
 };
 
 /* Navigation */
@@ -282,6 +340,26 @@ refs.btnView.addEventListener('click', ()=>{ activateButton(refs.btnView); refs.
 refs.btnEmails.addEventListener('click', ()=>{ activateButton(refs.btnEmails); refs.sections.emails.classList.add('active'); refs.sections.form.classList.remove('active'); refs.sections.view.classList.remove('active'); carregarEmails(); });
 refs.btnManual.addEventListener('click', ()=>{ window.open("https://www.canva.com/design/DAG2E8JXyUc/AeDk2bBvcx-L8c7_t5rAiQ/edit", "_blank"); });
 
+/* --- Funções para mostrar/esconder animação no botão Enviar NF --- */
+function showButtonLoading() {
+  try {
+    const btn = refs.btnEnviarNF;
+    if(!btn) return;
+    btn.setAttribute('disabled', 'disabled');
+    const dots = btn.querySelector('.dots');
+    if(dots) dots.classList.add('active');
+  } catch(e) { console.error('Erro showButtonLoading', e); }
+}
+function hideButtonLoading() {
+  try {
+    const btn = refs.btnEnviarNF;
+    if(!btn) return;
+    btn.removeAttribute('disabled');
+    const dots = btn.querySelector('.dots');
+    if(dots) dots.classList.remove('active');
+  } catch(e) { console.error('Erro hideButtonLoading', e); }
+}
+
 /* Enviar NF (mantive FileReader + POST) */
 async function enviarNF(){
   const razao = document.getElementById('razao').value.trim();
@@ -293,6 +371,10 @@ async function enviarNF(){
   const arquivo = document.getElementById('arquivo').files[0];
   if(!fabrica){ alert('Selecione uma fábrica antes de enviar.'); return; }
   if(!arquivo){ alert('Anexe o arquivo PDF antes de enviar.'); return; }
+
+  // mostrar animação no botão enquanto processa
+  showButtonLoading();
+
   const reader = new FileReader();
   reader.onload = async () => {
     const pdfBase64 = reader.result;
@@ -301,9 +383,26 @@ async function enviarNF(){
     try{
       const res = await fetch(webAppURL, { method:'POST', body: JSON.stringify(payload)});
       const result = await res.json();
-      if(result.status === 'success'){ mostrarFeedback('NF cadastrada!'); document.getElementById('nfForm').reset(); carregarNFs(); }
-      else alert('Erro ao cadastrar NF.');
-    }catch(e){ console.error(e); alert('Erro de conexão.'); }
+      if(result.status === 'success'){
+        mostrarFeedback('NF cadastrada!');
+        document.getElementById('nfForm').reset();
+        carregarNFs();
+        atualizarPreviewCobertura();
+      } else {
+        alert('Erro ao cadastrar NF.');
+      }
+    }catch(e){
+      console.error(e);
+      alert('Erro de conexão.');
+    } finally {
+      // sempre esconder a animação ao final (sucesso ou erro)
+      hideButtonLoading();
+    }
+  };
+  reader.onerror = function(e){
+    console.error('Erro ao ler arquivo', e);
+    alert('Erro ao ler o arquivo selecionado.');
+    hideButtonLoading();
   };
   reader.readAsDataURL(arquivo);
 }
@@ -600,6 +699,20 @@ function escapeHtml(text){
   return String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
 }
 
+/* --- FUNÇÃO ADICIONADA: atualiza a caixinha visual conforme digita (NÃO salva) --- */
+function atualizarPreviewCobertura(){
+  const razao = (refs.inputRazao && refs.inputRazao.value.trim()) || '';
+  const nfVenda = (refs.inputNfVenda && refs.inputNfVenda.value.trim()) || '';
+  const nfRemessa = (refs.inputNfRemessa && refs.inputNfRemessa.value.trim()) || '';
+
+  // Monta o texto seguindo o padrão que você pediu (apenas visual)
+  const texto = `segue NF de cobertura referente a NF (Nº NF Venda: ${nfVenda || '...'}) - (Razão Social: ${razao || '...'}) NF de remessa (Nº NF Remessa (Fornecedor): ${nfRemessa || '...'})`;
+
+  if(refs.previewTextoCobertura){
+    refs.previewTextoCobertura.textContent = texto;
+  }
+}
+
 /* Inicialização (evento único) */
 window.addEventListener('load', ()=>{
   refs.rowsPerPage.value = refs.rowsPerPage.value || '10';
@@ -608,6 +721,15 @@ window.addEventListener('load', ()=>{
   carregarNFs();
   carregarEmails();
   // otimização adicional: manter cache e listeners já configurados (funções inline mantidas para compatibilidade)
+
+  // listeners para a caixinha visual (apenas visual, não salva)
+  try{
+    if(refs.inputRazao) refs.inputRazao.addEventListener('input', atualizarPreviewCobertura);
+    if(refs.inputNfVenda) refs.inputNfVenda.addEventListener('input', atualizarPreviewCobertura);
+    if(refs.inputNfRemessa) refs.inputNfRemessa.addEventListener('input', atualizarPreviewCobertura);
+    // atualizar uma vez ao carregar
+    atualizarPreviewCobertura();
+  }catch(e){ console.error('Erro ao inicializar preview:', e); }
 });
 </script>
 
