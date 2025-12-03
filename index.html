@@ -12,13 +12,13 @@
 <style>
 /* --- VARIÁVEIS E GERAL --- */
 :root {
-  --primary: #4f46e5;      /* Índigo moderno */
+  --primary: #4f46e5;       /* Índigo moderno */
   --primary-dark: #4338ca; /* Índigo mais escuro para hover */
-  --accent: #6366f1;       /* Acento suave */
-  --bg: #f3f4f6;           /* Cinza muito claro, agradável aos olhos */
+  --accent: #6366f1;        /* Acento suave */
+  --bg: #f3f4f6;            /* Cinza muito claro, agradável aos olhos */
   --card: #ffffff;
-  --text: #1f2937;         /* Cinza escuro, melhor que preto puro */
-  --text-light: #6b7280;   /* Cinza médio para labels */
+  --text: #1f2937;          /* Cinza escuro, melhor que preto puro */
+  --text-light: #6b7280;    /* Cinza médio para labels */
   --border: #e5e7eb;
   --success: #10b981;
   --danger: #ef4444;
@@ -347,11 +347,11 @@ td a:hover { background: var(--primary); color: #fff; }
   color: #fff;
   padding: 12px 20px;
   border-radius: 8px;
-  display: none;
+  display: none; /* CORRIGIDO: Mantido display none */
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   z-index: 1300;
   font-weight: 500;
-  display: flex; align-items: center; gap: 8px;
+  align-items: center; gap: 8px;
 }
 #feedback::before { content: '✓'; display: inline-flex; align-items: center; justify-content: center; background: var(--success); color: white; width: 18px; height: 18px; border-radius: 50%; font-size: 11px; margin-right: 8px; }
 
