@@ -109,7 +109,6 @@ tr:hover{background:#f0e0fb}
     <button id="btnManual">Manual COBERTURA</button>
 </nav>
 
-<!-- Cadastrar NF -->
 <section id="formSection" class="active">
     <form id="nfForm">
         <label for="razao">Razão Social:</label>
@@ -141,10 +140,8 @@ tr:hover{background:#f0e0fb}
         <label for="observacao">Observação:</label>
         <input type="text" id="observacao" placeholder="Digite aqui uma observação">
 
-        <!-- Adicionei id específico para o botão Enviar NF para controlar apenas ele -->
         <button id="btnEnviarNF" type="button" class="send" onclick="enviarNF()">
           <span class="btn-text">Enviar NF</span>
-          <!-- as bolinhas escondidas por padrão; serão ativadas via JS -->
           <span class="dots" aria-hidden="true">
             <span class="dot"></span>
             <span class="dot"></span>
@@ -152,7 +149,6 @@ tr:hover{background:#f0e0fb}
           </span>
         </button>
 
-        <!-- CAIXINHA VISUAL: só visual, NÃO envia para webApp -->
         <div id="previewContainer" class="preview-container" aria-live="polite">
             <strong>Texto de cobertura (visual):</strong>
             <p id="previewTextoCobertura" class="preview-text">
@@ -162,7 +158,6 @@ tr:hover{background:#f0e0fb}
     </form>
 </section>
 
-<!-- Visualizar NFs -->
 <section id="viewSection">
     <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
         <div style="flex:1; min-width:220px;">
@@ -180,7 +175,7 @@ tr:hover{background:#f0e0fb}
 
         <div style="flex:2; min-width:220px;">
             <label for="searchInput">Pesquisar:</label>
-            <input type="text" id="searchInput" placeholder="Pesquise razão, NF, fábrica..." oninput="aplicarFiltroPesquisa()">
+            <input type="text" id="searchInput" placeholder="Razão, NF (Venda/Remessa/Cobertura), Fábrica..." oninput="aplicarFiltroPesquisa()">
         </div>
 
         <div style="min-width:220px;">
@@ -238,7 +233,6 @@ tr:hover{background:#f0e0fb}
     </div>
 </section>
 
-<!-- Emails -->
 <section id="emailsSection">
     <form id="emailsForm">
         <label for="emailFabrica">Fábrica:</label>
@@ -263,7 +257,6 @@ tr:hover{background:#f0e0fb}
     </table>
 </section>
 
-<!-- Obs bubble -->
 <div id="obsBubble" class="obs-bubble" role="dialog" aria-modal="true">
     <textarea id="obsText" placeholder="Escreva a observação..."></textarea>
     <div style="text-align:right;">
@@ -272,10 +265,8 @@ tr:hover{background:#f0e0fb}
     </div>
 </div>
 
-<!-- Feedback -->
 <div id="feedback">Operação realizada com sucesso!</div>
 
-<!-- Delete modal -->
 <div id="deleteModal" role="dialog" aria-modal="true">
     <div id="deleteModalContent">
         <p>Deseja realmente excluir esta NF?</p>
@@ -284,7 +275,6 @@ tr:hover{background:#f0e0fb}
     </div>
 </div>
 
-<!-- Script otimizado (mantive nomes/funções públicas para compatibilidade com atributos inline) -->
 <script>
 /* Globals & lightweight cache */
 const webAppURL = "https://script.google.com/macros/s/AKfycbyPdj_FtFywyV4Ey4b3-Q6YV3RcgXzsEUux6ceK23cdJTh71paHQ9HMD5Ts-pFOomUX/exec";
@@ -442,8 +432,17 @@ function aplicarFiltroPesquisa(){
       const r = allData[i];
       if(filtro && String(r.fabrica || '') !== filtro) continue;
       if(!termo){ tmp.push(r); continue; }
-      // busca combinada
-      const combined = (String(r.razao||'') + '|' + String(r.nfVenda||'') + '|' + String(r.nfRemessa||'') + '|' + String(r.fabrica||'') + '|' + String(r.observacao||'')).toLowerCase();
+      
+      // busca combinada -> ADICIONADO "nfCobertura" AQUI
+      const combined = (
+        String(r.razao||'') + '|' + 
+        String(r.nfVenda||'') + '|' + 
+        String(r.nfRemessa||'') + '|' + 
+        String(r.nfCobertura||'') + '|' + 
+        String(r.fabrica||'') + '|' + 
+        String(r.observacao||'')
+      ).toLowerCase();
+      
       if(combined.indexOf(termo) !== -1) tmp.push(r);
     }
     cachedFiltered = tmp;
